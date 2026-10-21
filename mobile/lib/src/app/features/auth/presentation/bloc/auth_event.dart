@@ -17,3 +17,14 @@ class AuthLoginRequested extends AuthEvent {
   @override
   List<Object> get props => [params];
 }
+
+class AuthRegisterRequested extends AuthEvent {
+  final RegisterParams params;
+
+  const AuthRegisterRequested({
+    required this.params,
+  });
+
+  @override
+  List<Object> get props => [params];
+}

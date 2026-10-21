@@ -1,8 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:musicbox/routes.dart';
 import 'package:musicbox/src/app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:musicbox/src/core/DI/dependency_injector.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:musicbox/src/core/theme/app_theme.dart';
 
 class AppWidget extends StatelessWidget {
   const AppWidget({super.key});
@@ -16,11 +17,8 @@ class AppWidget extends StatelessWidget {
         ),
       ],
       child: MaterialApp.router(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
+        title: 'MusicBox',
+        theme: AppTheme.dark,
         routerConfig: router,
       ),
     );

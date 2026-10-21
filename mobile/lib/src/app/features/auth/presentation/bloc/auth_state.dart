@@ -28,3 +28,21 @@ class AuthLoginFailure extends AuthState {
   @override
   List<Object> get props => [exception];
 }
+
+class AuthRegisterSuccess extends AuthState {
+  final AuthResponseEntity authResponse;
+
+  const AuthRegisterSuccess(this.authResponse);
+
+  @override
+  List<Object> get props => [authResponse];
+}
+
+class AuthRegisterFailure extends AuthState {
+  final BaseException exception;
+
+  const AuthRegisterFailure({required this.exception});
+
+  @override
+  List<Object> get props => [exception];
+}

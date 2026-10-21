@@ -4,7 +4,7 @@ import 'package:gap/gap.dart';
 void showMessageSnackBar(
   BuildContext context,
   String message, {
-  Color? color = Colors.grey,
+  Color? color,
   Color? textColor = Colors.white,
   required IconData icon,
   required Color iconColor,

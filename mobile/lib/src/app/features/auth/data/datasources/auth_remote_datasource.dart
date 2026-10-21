@@ -1,4 +1,5 @@
 import 'package:musicbox/src/app/features/auth/domain/dtos/login_params.dart';
+import 'package:musicbox/src/app/features/auth/domain/dtos/register_params.dart';
 import 'package:musicbox/src/core/client_http/client_http.dart';
 import 'package:musicbox/src/core/utils/endpoints.dart';
 
@@ -11,6 +12,14 @@ class AuthRemoteDatasource {
       _restClient.post(
         RestClientRequest(
           path: Endpoints.login,
+          data: params.toJson(),
+        ),
+      );
+
+  Future<RestClientResponse> register(RegisterParams params) => //
+      _restClient.post(
+        RestClientRequest(
+          path: Endpoints.register,
           data: params.toJson(),
         ),
       );
