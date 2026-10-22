@@ -23,4 +23,7 @@ class AuthRemoteDatasource {
           data: params.toJson(),
         ),
       );
+
+  Future<RestClientResponse> logout() => //
+      _restClient.post(RestClientRequest(path: Endpoints.logout));
 }

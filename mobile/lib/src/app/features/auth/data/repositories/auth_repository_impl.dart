@@ -42,4 +42,16 @@ class AuthRepositoryImpl implements IAuthRepository {
       return Failure(DefaultException(message: 'Erro inesperado: ${e.toString()}'));
     }
   }
+
+  @override
+  AsyncResult<Unit> logout() async {
+    try {
+      await _authRemoteDatasource.logout();
+      return const Success(unit);
+    } on RestClientException catch (e) {
+      return Failure(DefaultException(message: e.message));
+    } catch (e) {
+      return Failure(DefaultException(message: 'Erro inesperado: ${e.toString()}'));
+    }
+  }
 }

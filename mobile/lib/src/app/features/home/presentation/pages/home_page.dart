@@ -3,12 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musicbox/routes.dart';
+import 'package:musicbox/src/app/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:musicbox/src/app/features/home/presentation/bloc/home_bloc.dart';
 import 'package:musicbox/src/app/features/home/presentation/widgets/new_release_card_widget.dart';
 import 'package:musicbox/src/app/features/library/domain/entities/user_release_entity.dart';
 import 'package:musicbox/src/app/features/library/presentation/widgets/user_release_tile_widget.dart';
 import 'package:musicbox/src/core/DI/dependency_injector.dart';
-import 'package:musicbox/src/core/services/session_service.dart';
+import 'package:musicbox/src/core/interfaces/usecase_interface.dart';
 import 'package:musicbox/src/core/theme/app_text_styles.dart';
 import 'package:musicbox/src/core/utils/date_format.dart';
 import 'package:musicbox/src/core/widgets/hairline_card_widget.dart';
@@ -22,8 +23,8 @@ class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   Future<void> _logout() async {
-    final sessionService = injector<SessionService>();
-    await sessionService.removeToken();
+    final logoutUsecase = injector<LogoutUsecase>();
+    await logoutUsecase.call(NoParams());
     router.go('/login');
   }
 

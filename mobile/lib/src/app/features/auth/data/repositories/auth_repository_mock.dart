@@ -58,4 +58,11 @@ class AuthRepositoryMock implements IAuthRepository {
       ),
     );
   }
+
+  @override
+  AsyncResult<Unit> logout() async {
+    await Future.delayed(const Duration(milliseconds: 200)); // simula latência
+
+    return const Success(unit);
+  }
 }

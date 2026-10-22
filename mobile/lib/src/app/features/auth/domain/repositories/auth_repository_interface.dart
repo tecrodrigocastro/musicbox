@@ -7,4 +7,6 @@ abstract interface class IAuthRepository {
   AsyncResult<AuthResponseEntity> login(LoginParams login);
 
   AsyncResult<AuthResponseEntity> register(RegisterParams params);
+
+  AsyncResult<Unit> logout();
 }

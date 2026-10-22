@@ -33,7 +33,7 @@ void main() {
       );
 
       final successResponseData = {
-        'user': {
+        'data': {
           'id': '1',
           'email': 'test@example.com',
           'name': 'Test User',
@@ -179,7 +179,7 @@ void main() {
         // Arrange
         final malformedResponse = RestClientResponse(
           data: {
-            'user': 'invalid_user_data', // should be Map
+            'data': 'invalid_user_data', // should be Map
             'token': 'test_token_123',
           },
           statusCode: 200,
@@ -227,7 +227,7 @@ void main() {
         // Arrange
         final incompleteResponse = RestClientResponse(
           data: {
-            'user': {
+            'data': {
               'id': '1',
               'email': 'test@example.com',
               'name': 'Test User',

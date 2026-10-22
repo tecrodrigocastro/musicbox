@@ -2,9 +2,6 @@
 
 use Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
-use Illuminate\Support\Str;
-
-$sessionCookieName = env('SESSION_COOKIE', Str::slug((string) env('APP_NAME', 'laravel')).'-session');
 
 return [
     /*
@@ -57,9 +54,11 @@ return [
         'description' => <<<'MARKDOWN'
 This document describes the versioned `/api/v1` API. Artist and release route IDs are internal ULIDs; YouTube Music IDs are provider identifiers and are not accepted in place of route IDs.
 
-### Session authentication and CSRF
+### Authentication: bearer tokens and session cookies
 
-The API uses Sanctum session cookies for first-party clients, not bearer tokens. Authenticated operations require the session cookie shown by the `sessionCookie` security scheme. For browser clients, first request `GET /sanctum/csrf-cookie`, send cookies with credentials, URL-decode the `XSRF-TOKEN` cookie, and include it as `X-XSRF-TOKEN` on state-changing requests. Registration and login also use stateful session and CSRF middleware. Configure the SPA's exact origin in CORS and Sanctum stateful domains. Documentation and its OpenAPI JSON are readable only by authenticated admins; API endpoint authentication remains unchanged.
+`POST /register` and `POST /login` always return a Sanctum personal access token in the `token` field alongside the user `data`. Native/mobile clients should store it and send `Authorization: Bearer <token>` on every subsequent request; `POST /logout` revokes the token that authenticated the request. There is no separate token endpoint and no refresh flow — a new token is minted on every login.
+
+Browser SPA clients may instead rely on the session cookie: when the request's `Origin`/`Referer` matches a configured Sanctum stateful domain, Sanctum automatically also establishes a session and sets the cookie shown by the `sessionCookie` security scheme (the bearer token is still returned in the same response and can be ignored). For that flow, first request `GET /sanctum/csrf-cookie`, send cookies with credentials, URL-decode the `XSRF-TOKEN` cookie, and include it as `X-XSRF-TOKEN` on state-changing requests. Configure the SPA's exact origin in CORS and Sanctum stateful domains. Documentation and its OpenAPI JSON are readable only by authenticated admins; API endpoint authentication remains unchanged.
 
 ### Catalog and personal release behavior
 
@@ -201,9 +200,9 @@ MARKDOWN,
         MiddlewareAuthSecurityStrategy::class,
         [
             'middleware' => ['auth', 'auth:*'],
-            'scheme' => SecurityScheme::apiKey('cookie', $sessionCookieName)
-                ->as('sessionCookie')
-                ->setDescription('Sanctum session cookie for an authenticated first-party SPA session.'),
+            'scheme' => SecurityScheme::http('bearer')
+                ->as('bearerToken')
+                ->setDescription('Sanctum personal access token returned by `POST /login` and `POST /register` as `token`. Browser SPA clients may use the Sanctum session cookie instead; see the API description.'),
         ],
     ],
 ];

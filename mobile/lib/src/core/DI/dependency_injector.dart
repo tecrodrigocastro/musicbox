@@ -22,6 +22,7 @@ import 'package:musicbox/src/app/features/auth/data/repositories/auth_repository
 import 'package:musicbox/src/app/features/auth/data/repositories/auth_repository_mock.dart';
 import 'package:musicbox/src/app/features/auth/domain/repositories/auth_repository_interface.dart';
 import 'package:musicbox/src/app/features/auth/domain/usecases/login_usecase.dart';
+import 'package:musicbox/src/app/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:musicbox/src/app/features/auth/infrastructure/auth_interceptor.dart';
 import 'package:musicbox/src/app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:musicbox/src/core/cache/shared_preferences/shared_preferences_impl.dart';
@@ -69,6 +70,11 @@ void setupDependencyInjector({bool loggerApi = false, bool useMocks = true, Logg
   } else {
     injector.registerLazySingleton<IAuthRepository>(() => AuthRepositoryImpl(authRemoteDatasource: injector<AuthRemoteDatasource>()));
   }
+
+  injector.registerFactory(() => LogoutUsecase(
+        authRepository: injector<IAuthRepository>(),
+        sessionService: injector<SessionService>(),
+      ));
 
   injector.registerLazySingleton(() => AuthBloc(
         loginUsecase: LoginUsecase(

@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\Support\StrictCsrfMiddleware;
 
-it('registers a user and returns session identity without password', function () {
+it('registers a user and returns session identity and a bearer token without password', function () {
     $this->withHeader('Origin', 'http://localhost:3000');
-    $this->postJson('/api/v1/register', [
+    $register = $this->postJson('/api/v1/register', [
         'name' => 'Listener',
         'email' => 'listener@example.test',
         'password' => 'Strong-password-123',
@@ -18,9 +18,30 @@ it('registers a user and returns session identity without password', function ()
     ])->assertCreated()
         ->assertJsonPath('data.name', 'Listener')
         ->assertJsonMissingPath('data.password');
+    expect($register->json('token'))->toBeString()->not->toBeEmpty();
 
     expect(User::where('email', 'listener@example.test')->exists())->toBeTrue();
     $this->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.email', 'listener@example.test');
+});
+
+it('authenticates and revokes access with a bearer token', function () {
+    $user = User::factory()->create(['password' => Hash::make('Strong-password-123')]);
+
+    $login = $this->postJson('/api/v1/login', [
+        'email' => $user->email,
+        'password' => 'Strong-password-123',
+    ])->assertOk()->assertCookieMissing(config('session.cookie'));
+    $token = $login->json('token');
+    expect($token)->toBeString()->not->toBeEmpty();
+
+    $this->withHeader('Authorization', "Bearer {$token}")
+        ->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.id', $user->id);
+
+    $this->withHeader('Authorization', "Bearer {$token}")
+        ->postJson('/api/v1/logout')->assertOk();
+
+    $this->withHeader('Authorization', "Bearer {$token}")
+        ->getJson('/api/v1/me')->assertUnauthorized();
 });
 
 it('logs in and out using the session guard', function () {
@@ -52,7 +73,7 @@ it('requires confirmed passwords and protects the current-user endpoint', functi
     $this->getJson('/api/v1/me')->assertUnauthorized();
 });
 
-it('rejects registration and login without a configured stateful origin before writing', function () {
+it('registers and logs in with a bearer token when there is no configured stateful origin', function () {
     $payload = [
         'name' => 'No Session',
         'email' => 'no-session@example.test',
@@ -60,16 +81,23 @@ it('rejects registration and login without a configured stateful origin before w
         'password_confirmation' => 'Strong-password-123',
     ];
 
-    $this->postJson('/api/v1/register', $payload)->assertStatus(419);
-    $this->withHeader('Origin', 'https://attacker.example')
-        ->postJson('/api/v1/register', $payload)
-        ->assertStatus(419)
-        ->assertExactJson(['message' => 'A trusted stateful session is required.']);
-    $this->assertDatabaseMissing('users', ['email' => 'no-session@example.test']);
+    // Native clients don't send Origin/Referer at all; untrusted origins behave the same way:
+    // no session is established either way, only a bearer token.
+    $register = $this->postJson('/api/v1/register', $payload)
+        ->assertCreated()
+        ->assertCookieMissing(config('session.cookie'));
+    $token = $register->json('token');
+    expect($token)->toBeString()->not->toBeEmpty();
+    $this->assertDatabaseHas('users', ['email' => 'no-session@example.test']);
 
-    $this->postJson('/api/v1/login', ['email' => ['bad'], 'password' => 'x'])
-        ->assertStatus(419)
-        ->assertExactJson(['message' => 'A trusted stateful session is required.']);
+    $this->withHeader('Authorization', "Bearer {$token}")
+        ->getJson('/api/v1/me')->assertOk()->assertJsonPath('data.email', 'no-session@example.test');
+
+    $login = $this->withHeader('Origin', 'https://attacker.example')
+        ->postJson('/api/v1/login', ['email' => $payload['email'], 'password' => $payload['password']])
+        ->assertOk()
+        ->assertCookieMissing(config('session.cookie'));
+    expect($login->json('token'))->toBeString()->not->toBeEmpty();
 });
 
 it('accepts both configured local origins and initializes session and CSRF cookies', function (string $origin, string $email) {
