@@ -17,7 +17,7 @@ void main() {
     );
 
     const authResponseMap = {
-      'user': {
+      'data': {
         'id': '1',
         'email': 'test@example.com',
         'name': 'Test User',
@@ -59,7 +59,7 @@ void main() {
 
       test('should throw exception when user data is invalid', () {
         const invalidMap = <String, dynamic>{
-          'user': {
+          'data': {
             'id': '1',
             // missing email and name
           },
@@ -74,7 +74,7 @@ void main() {
 
       test('should throw exception when token is missing', () {
         const invalidMap = <String, dynamic>{
-          'user': {
+          'data': {
             'id': '1',
             'email': 'test@example.com',
             'name': 'Test User',
@@ -90,7 +90,7 @@ void main() {
 
       test('should throw exception when field types are wrong', () {
         const invalidMap = <String, dynamic>{
-          'user': 'invalid_user_data', // should be Map
+          'data': 'invalid_user_data', // should be Map
           'token': 'test_token_123',
         };
 
@@ -104,7 +104,7 @@ void main() {
     group('error handling', () {
       test('should include stack trace in exception message', () {
         const invalidMap = <String, dynamic>{
-          'user': 'invalid_user_data',
+          'data': 'invalid_user_data',
           'token': 'test_token_123',
         };
 
@@ -119,7 +119,7 @@ void main() {
 
       test('should handle null values gracefully', () {
         const invalidMap = <String, dynamic>{
-          'user': null,
+          'data': null,
           'token': 'test_token_123',
         };
 
@@ -158,7 +158,7 @@ void main() {
 
       test('should handle different token formats', () {
         final mapWithLongToken = {
-          'user': {
+          'data': {
             'id': '1',
             'email': 'test@example.com',
             'name': 'Test User',

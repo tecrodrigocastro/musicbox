@@ -15,12 +15,12 @@ class LoginController extends Controller
     public function __invoke(LoginRequest $request, AuthService $auth): JsonResponse
     {
         $credentials = $request->validated();
-        $user = $auth->attempt($credentials['email'], $credentials['password'], $request);
+        $result = $auth->attempt($credentials['email'], $credentials['password'], $request);
 
-        if ($user === null) {
+        if ($result === null) {
             return response()->json(['message' => 'Invalid credentials.'], 401);
         }
 
-        return (new UserResource($user))->response()->setStatusCode(200);
+        return (new UserResource($result['user']))->additional(['token' => $result['token']])->response()->setStatusCode(200);
     }
 }

@@ -14,8 +14,8 @@ class RegisterController extends Controller
 {
     public function __invoke(RegisterRequest $request, AuthService $auth): JsonResponse
     {
-        $user = $auth->register($request->validated(), $request);
+        ['user' => $user, 'token' => $token] = $auth->register($request->validated(), $request);
 
-        return (new UserResource($user))->response()->setStatusCode(201);
+        return (new UserResource($user))->additional(['token' => $token])->response()->setStatusCode(201);
     }
 }

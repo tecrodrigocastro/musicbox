@@ -19,9 +19,9 @@ use Illuminate\Support\Facades\Route;
 // Operation grouping in the documentation lives on the controllers (Dedoc\Scramble\Attributes\Group),
 // not here: this file only declares the versioned surface and its middleware.
 Route::prefix('v1')->group(function (): void {
-    Route::post('/register', RegisterController::class)->middleware(['stateful-session', 'throttle:auth'])->name('api.v1.register');
-    Route::post('/login', LoginController::class)->middleware(['stateful-session', 'throttle:auth'])->name('api.v1.login');
-    Route::post('/logout', LogoutController::class)->middleware(['stateful-session', 'auth:sanctum'])->name('api.v1.logout');
+    Route::post('/register', RegisterController::class)->middleware(['throttle:auth'])->name('api.v1.register');
+    Route::post('/login', LoginController::class)->middleware(['throttle:auth'])->name('api.v1.login');
+    Route::post('/logout', LogoutController::class)->middleware(['auth:sanctum'])->name('api.v1.logout');
     Route::get('/me', CurrentUserController::class)->middleware('auth:sanctum')->name('api.v1.me');
 
     Route::get('/artists/search', ArtistSearchController::class)->middleware(['auth:sanctum', 'throttle:music-search'])->name('api.v1.artists.search');

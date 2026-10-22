@@ -31,11 +31,11 @@ void main() {
     /// no console do seu editor de codigo, por padrão é desabilitado.
     loggerApi: true,
 
-    /// Ativa o uso de mocks, ou seja, os dados do login serão simulados localmente sem a necessidade de uma API real.
-    /// As credenciais válidas para login são:
-    /// - Email: `teste@teste.com`
-    /// - Senha: `123456Aa!`
-    useMocks: true,
+    /// Ativa o uso de mocks. Hoje só afeta `IAuthRepository`: catálogo e
+    /// biblioteca ainda não têm `*RepositoryImpl` (veja `dependency_injector.dart`).
+    /// Com `false`, login/cadastro/logout chamam a API real em
+    /// `Endpoints.baseUrl` (`php artisan serve` precisa estar rodando).
+    useMocks: false,
     logger: logger,
   );
   runApp(const AppWidget());

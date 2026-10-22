@@ -4,6 +4,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:result_dart/result_dart.dart';
 import 'package:musicbox/src/app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:musicbox/src/app/features/auth/domain/usecases/login_usecase.dart';
+import 'package:musicbox/src/app/features/auth/domain/usecases/register_usecase.dart';
+import 'package:musicbox/src/app/features/auth/domain/dtos/register_params.dart';
 import 'package:musicbox/src/app/features/auth/domain/dtos/login_params.dart';
 import 'package:musicbox/src/app/features/auth/domain/entities/auth_response_entity.dart';
 import 'package:musicbox/src/app/features/auth/domain/entities/user_entity.dart';
@@ -13,18 +15,23 @@ import 'package:musicbox/src/core/errors/credentials_validation_exception.dart';
 
 class MockLoginUsecase extends Mock implements LoginUsecase {}
 
+class MockRegisterUsecase extends Mock implements RegisterUsecase {}
+
 void main() {
   group('AuthBloc', () {
     late AuthBloc authBloc;
     late MockLoginUsecase mockLoginUsecase;
+    late MockRegisterUsecase mockRegisterUsecase;
 
     setUpAll(() {
       registerFallbackValue(LoginParams(email: '', password: ''));
+      registerFallbackValue(RegisterParams.empty());
     });
 
     setUp(() {
       mockLoginUsecase = MockLoginUsecase();
-      authBloc = AuthBloc(loginUsecase: mockLoginUsecase);
+      mockRegisterUsecase = MockRegisterUsecase();
+      authBloc = AuthBloc(loginUsecase: mockLoginUsecase, registerUsecase: mockRegisterUsecase);
     });
 
     tearDown(() {
@@ -362,6 +369,38 @@ void main() {
         expect(initial.props, equals([]));
         expect(loading.props, equals([]));
       });
+    });
+
+    group('AuthRegisterRequested', () {
+      final registerParams = RegisterParams(
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'Password123!',
+        passwordConfirmation: 'Password123!',
+      );
+
+      const authResponse = AuthResponseEntity(
+        token: 'token',
+        user: UserEntity(id: '1', email: 'test@example.com', name: 'Test User'),
+      );
+
+      blocTest<AuthBloc, AuthState>(
+        'emits [AuthLoading, AuthRegisterSuccess] when register succeeds',
+        build: () {
+          when(() => mockRegisterUsecase.call(any())).thenAnswer((_) async => const Success(authResponse));
+          return authBloc;
+        },
+        act: (bloc) => bloc.add(AuthRegisterRequested(params: registerParams)),
+        expect: () => [AuthLoading(), const AuthRegisterSuccess(authResponse)],
+      );
+
+      blocTest<AuthBloc, AuthState>(
+        'emits [AuthLoading, AuthRegisterFailure] when params are invalid',
+        build: () => authBloc,
+        act: (bloc) => bloc.add(AuthRegisterRequested(params: RegisterParams.empty())),
+        expect: () => [AuthLoading(), isA<AuthRegisterFailure>()],
+        verify: (_) => verifyNever(() => mockRegisterUsecase.call(any())),
+      );
     });
   });
 }

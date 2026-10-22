@@ -4,7 +4,7 @@ use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
-it('publishes every versioned API operation with session-cookie security', function () {
+it('publishes every versioned API operation with bearer-token security', function () {
     $this->actingAs(Admin::factory()->create(), 'admin');
 
     $this->get('/docs/api')->assertOk();
@@ -31,12 +31,11 @@ it('publishes every versioned API operation with session-cookie security', funct
     expect(array_keys($document['paths']))->toEqualCanonicalizing(array_keys($expectedOperations));
     expect(array_keys($productionDocument['paths']))->toEqualCanonicalizing(array_keys($expectedOperations));
     $securitySchemes = collect($document['components']['securitySchemes'])
-        ->filter(fn (array $scheme): bool => ($scheme['type'] ?? null) === 'apiKey'
-            && ($scheme['in'] ?? null) === 'cookie'
-            && ($scheme['name'] ?? null) === config('session.cookie'));
+        ->filter(fn (array $scheme): bool => ($scheme['type'] ?? null) === 'http'
+            && ($scheme['scheme'] ?? null) === 'bearer');
     expect($securitySchemes)->toHaveCount(1);
-    $sessionScheme = $securitySchemes->keys()->first();
-    expect($document['security'])->toContain([$sessionScheme => []]);
+    $bearerScheme = $securitySchemes->keys()->first();
+    expect($document['security'])->toContain([$bearerScheme => []]);
 
     foreach ($expectedOperations as $path => $methods) {
         foreach ($methods as $method => $requiresSession) {
